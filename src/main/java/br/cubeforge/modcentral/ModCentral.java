@@ -1,7 +1,6 @@
 package br.cubeforge.modcentral;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricCreativeModeTab;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -60,7 +59,7 @@ public final class ModCentral implements ModInitializer {
     public static final ResourceKey<CreativeModeTab> TAB_KEY =
         ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), id("minerios_espadas"));
 
-    public static final CreativeModeTab TAB = FabricCreativeModeTab.builder()
+    public static final CreativeModeTab TAB = CreativeModeTab.builder()
         .title(Component.translatable("creativeTab.modcentral.minerios_espadas"))
         .icon(() -> new ItemStack(ESPADA))
         .displayItems((parameters, output) -> {
