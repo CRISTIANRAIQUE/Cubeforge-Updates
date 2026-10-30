@@ -72,18 +72,18 @@ jobs:
                   png=z.read("assets/modcentral/textures/item/"+item+".png")
                   assert len(png)>100,(item,len(png))
                   assert struct.unpack('>II',png[16:24])==(32,32),item
-              for texture in ["cristal_azul","espada_cristal_azul","machado_cristal_azul","picareta_cristal_azul","pa_cristal_azul","enxada_cristal_azul","minerio_cristal_azul","minerio_cristal_profundo"]:
-              p="assets/modcentral/textures/textura/"+texture+".png"
-              assert p in files,("Falta textura personalizada",p)
-              data=z.read(p)
-              assert struct.unpack('>II',data[16:24])==(32,32),p
-              if texture.startswith("minerio_"):
-                  model=json.loads(z.read("assets/modcentral/models/block/"+texture+".json"))
-                  assert model["textures"]["all"]=="modcentral:textura/"+texture
-              else:
-                  model=json.loads(z.read("assets/modcentral/models/item/"+texture+".json"))
-                  assert model["textures"]["layer0"]=="modcentral:textura/"+texture
-          print("VALIDAÇÃO OK: 8 texturas dentro da pasta textura do JAR; 5 ferramentas 2D/3D")
+                  for texture in ["cristal_azul","espada_cristal_azul","machado_cristal_azul","picareta_cristal_azul","pa_cristal_azul","enxada_cristal_azul","minerio_cristal_azul","minerio_cristal_profundo"]:
+                  p="assets/modcentral/textures/textura/"+texture+".png"
+                  assert p in files,("Falta textura personalizada",p)
+                  data=z.read(p)
+                  assert struct.unpack('>II',data[16:24])==(32,32),p
+                  if texture.startswith("minerio_"):
+                      model=json.loads(z.read("assets/modcentral/models/block/"+texture+".json"))
+                      assert model["textures"]["all"]=="modcentral:textura/"+texture
+                  else:
+                      model=json.loads(z.read("assets/modcentral/models/item/"+texture+".json"))
+                      assert model["textures"]["layer0"]=="modcentral:textura/"+texture
+              print("VALIDAÇÃO OK: 8 texturas na pasta textura do JAR; 5 ferramentas 2D/3D")
           PY
       - name: Publicar exclusivamente JAR da opção 5
         run: |
