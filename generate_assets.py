@@ -15,7 +15,7 @@ def write_json(path, obj):
 
 def save_png(path, pixels):
     height, width = len(pixels), len(pixels[0])
-    assert width == 16 and height == 16
+    assert width in (16,32) and height in (16,32)
     pixels_b = b"".join(b"\x00" + b"".join(bytes(p) for p in row) for row in pixels)
     def chunk(tag, payload):
         return struct.pack(">I",len(payload)) + tag + payload + struct.pack(">I", zlib.crc32(tag + payload) & 0xffffffff)
