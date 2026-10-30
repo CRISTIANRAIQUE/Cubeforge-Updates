@@ -55,7 +55,6 @@ jobs:
               import json
               for item in ["espada_cristal_azul","machado_cristal_azul","picareta_cristal_azul","pa_cristal_azul","enxada_cristal_azul"]:
                   model=json.loads(z.read("assets/modcentral/models/item/"+item+".json"))
-                  assert len(model["elements"])>20,(item,len(model["elements"]))
                   assert "elements" not in model,(item,"inventario nao pode renderizar 3D")
                   held=json.loads(z.read("assets/modcentral/models/item/"+item+"_held.json"))
                   assert len(held["elements"])>20,(item,"modelo segurado deve ser 3D")
