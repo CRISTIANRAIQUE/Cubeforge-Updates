@@ -47,8 +47,15 @@ jobs:
               for n in textures:
                   b=z.read(n)
                   assert b[:8]==b'\x89PNG\r\n\x1a\n',n
-                  assert struct.unpack('>II',b[16:24])==(16,16),n
-              print("VALIDAÇÃO OK:",len(textures),"texturas 16x16 presentes")
+                  assert struct.unpack('>II',b[16:24])==(32,32),n
+              models=[n for n in files if n.startswith("assets/modcentral/models/item/") and n.endswith(".json")]
+              assert len(models)>=6,(len(models),models)
+              import json
+              for item in ["espada_cristal_azul","machado_cristal_azul","picareta_cristal_azul","pa_cristal_azul","enxada_cristal_azul","cristal_azul"]:
+                  model=json.loads(z.read("assets/modcentral/models/item/"+item+".json"))
+                  assert len(model["elements"])>20,(item,len(model["elements"]))
+                  assert "firstperson_righthand" in model["display"]
+              print("VALIDAÇÃO OK:",len(textures),"texturas 32x32 + 6 modelos voxel 3D")
           PY
       - name: Publicar exclusivamente JAR da opção 5
         run: |
