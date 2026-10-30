@@ -243,3 +243,144 @@ for name, pattern in recipes.items():
        "result":{"id":"modcentral:"+name,"count":1}
     })
 write_json(base/"pack.mcmeta",{"pack":{"description":"Cubeforge - Opção 5 Gelo Azul (Fabric 26.3)","min_format":97,"max_format":121}})
+
+
+# =====================================================================
+# Cubeforge v1.2.0: Opção 5 refinada + modelos voxel 3D para mão/solo
+# =====================================================================
+def ice_refine(old, salt):
+    """Textura em 32x32 para imagem mais fiel ao cristal de gelo da opção 5.
+    Conservar o contorno original e criar sombreamento intra-pixel."""
+    r=random.Random(26350+salt)
+    shades={
+       O:[O,(24,37,62,255)], D:[D,(53,72,99,255)],
+       H:[H,(68,78,93,255)],G:[G,S],
+       B:[B,(67,125,190,255)],C:[C,(122,185,232,255)],
+       I:[I,(174,230,255,255)],W:[W,(247,254,255,255)],
+       S:[S,(216,225,234,255)]
+    }
+    out=[[T for x in range(32)] for y in range(32)]
+    for y in range(16):
+        for x in range(16):
+            c=old[y][x]
+            if c==T: continue
+            px=x*2;py=y*2
+            for dy in range(2):
+                for dx in range(2):
+                    v=c
+                    if c in shades and dx==0 and dy==0 and ((x+y+salt)%3==0):
+                        v=shades[c][-1]
+                    elif c in shades and dx==1 and dy==1 and c in (W,I,C):
+                        v=shades[c][0]
+                    out[py+dy][px+dx]=v
+    return out
+
+# A arma e as ferramentas mantêm silhuetas reconhecíveis mesmo no hotbar.
+sprites={
+    "espada_cristal_azul":sword,
+    "machado_cristal_azul":axe,
+    "picareta_cristal_azul":pick,
+    "pa_cristal_azul":shovel,
+    "enxada_cristal_azul":hoe,
+    "cristal_azul":gem
+}
+for index,(name,pixels) in enumerate(sprites.items()):
+    pix32=ice_refine(pixels,index)
+    # Iluminação fria central, em contraste com o cabo de grafite.
+    if name=="espada_cristal_azul":
+        for x,y in [(25,6),(23,8),(21,10),(19,12),(17,14)]:
+            if 0<=y<32 and pix32[y][x]!=T: pix32[y][x]=(247,254,255,255)
+    save_png(assets/("textures/item/"+name+".png"),pix32)
+
+# Minérios 32x32: grafite/matriz de pedra com inclusões azul-gelo,
+# flocos brancos facetados, bem mais próximo da referência escolhida.
+stone_sets={
+  False:[(99,106,117,255),(118,123,131,255),(135,140,147,255),
+         (110,119,131,255),(83,94,109,255),(149,151,158,255)],
+  True:[(34,42,59,255),(48,55,70,255),(59,66,83,255),
+        (41,49,65,255),(65,72,86,255),(29,37,51,255)]
+}
+ore_clusters=[(5,5,3),(19,4,3),(11,12,4),(26,12,3),(4,24,4),
+              (17,24,4),(27,27,2),(26,3,2),(11,30,2)]
+for name, deep in [("minerio_cristal_azul",False),("minerio_cristal_profundo",True)]:
+    random_stone=random.Random(141 if not deep else 918)
+    palette=stone_sets[deep]
+    ore=[[None for _ in range(32)] for _ in range(32)]
+    for yy in range(32):
+        for xx in range(32):
+            # pedra com microplacas e fraturas, sem ruído de cores excessivo.
+            gx=xx//3;gy=yy//3
+            region=(gx*13+gy*7+(gx*gy)//3)%len(palette)
+            if random_stone.randrange(9)==0:region=(region+1)%len(palette)
+            ore[yy][xx]=palette[region]
+    for ci,(ox,oy,r) in enumerate(ore_clusters):
+        for yy in range(max(0,oy-r),min(32,oy+r+1)):
+            for xx in range(max(0,ox-r),min(32,ox+r+1)):
+                delta=abs(xx-ox)*1.1+abs(yy-oy)*0.9
+                if delta > r+0.4: continue
+                if delta > r-0.2:
+                    color=(34,75,126,255) if deep else (66,118,166,255)
+                elif xx<ox:
+                    color=(98,169,227,255)
+                elif yy>oy and (xx+yy)%3==0:
+                    color=(192,234,255,255)
+                else:
+                    color=(145,208,255,255)
+                ore[yy][xx]=color
+        for xx,yy in [(ox,oy),(ox-1,oy),(ox,oy-1)]:
+            if 0<=xx<32 and 0<=yy<32:ore[yy][xx]=W
+        if ci%2==0:
+            for xx,yy in [(ox+1,oy+2),(ox+2,oy+1)]:
+                if 0<=xx<32 and 0<=yy<32:ore[yy][xx]=I
+    save_png(assets/("textures/block/"+name+".png"),ore)
+
+# Modelos verdadeiramente tridimensionais:
+# Cada pixel opaco se torna um pequeno prisma com faces laterais
+# visíveis e textura no topo, base e nos lados. Isto difere do
+# modelo "handheld" simples, que no jogo é uma lâmina visual plana.
+#
+# As coordenadas da geometria ficam em 0..16, com espessura 2 a 4
+# unidades conforme peça. Um artesanato voxel sem arquivos externos.
+hand_display={
+    "thirdperson_righthand":{"rotation":[0,-90,55],"translation":[0,4,0],"scale":[0.82,0.82,0.82]},
+    "thirdperson_lefthand":{"rotation":[0,90,-55],"translation":[0,4,0],"scale":[0.82,0.82,0.82]},
+    "firstperson_righthand":{"rotation":[0,-90,25],"translation":[1.1,3.2,1.1],"scale":[0.72,0.72,0.72]},
+    "firstperson_lefthand":{"rotation":[0,90,-25],"translation":[1.1,3.2,1.1],"scale":[0.72,0.72,0.72]},
+    "gui":{"rotation":[30,225,0],"translation":[0,0,0],"scale":[0.92,0.92,0.92]},
+    "ground":{"translation":[0,2,0],"scale":[0.5,0.5,0.5]},
+    "fixed":{"rotation":[0,180,0],"scale":[0.75,0.75,0.75]}
+}
+def voxel_model(name,pixels):
+    elements=[]
+    for yy in range(16):
+        for xx in range(16):
+            if pixels[yy][xx]==T: continue
+            color=pixels[yy][xx]
+            # cabo mais arredondado; cristal/metal mais espesso.
+            is_handle=color in (H,D,G,S)
+            z0,z1=(6.5,9.5) if is_handle else (7.0,9.0)
+            if name=="cristal_azul": z0,z1=6.5,9.5
+            uv=[xx,yy,xx+1,yy+1]
+            face={"texture":"#layer0","uv":uv}
+            elements.append({
+                "from":[xx,15-yy,z0],
+                "to":[xx+1,16-yy,z1],
+                "faces":{side:face.copy() for side in
+                         ("north","south","east","west","up","down")}
+            })
+    assert 0<len(elements)<256,(name,len(elements))
+    model={
+       "ambientocclusion":False,
+       "gui_light":"side",
+       "textures":{"particle":"modcentral:item/"+name,
+                   "layer0":"modcentral:item/"+name},
+       "elements":elements,
+       "display":hand_display
+    }
+    write_json(assets/("models/item/"+name+".json"),model)
+    # Mesmo identificador de item, novo modelo renderizado em todos os contextos.
+    write_json(assets/("items/"+name+".json"),{
+       "model":{"type":"minecraft:model","model":"modcentral:item/"+name}
+    })
+for name,pixels in sprites.items():
+    voxel_model(name,pixels)
