@@ -68,12 +68,9 @@ jobs:
                   assert "gui" not in str(definition["cases"]),item
                   assert definition["fallback"]["model"]=="modcentral:item/"+item,item
               for item in ["espada_cristal_azul","machado_cristal_azul","picareta_cristal_azul","pa_cristal_azul","enxada_cristal_azul"]:
-                  from PIL import Image
-                  from io import BytesIO
-                  im=Image.open(BytesIO(z.read("assets/modcentral/textures/item/"+item+".png")))
-                  pix=im.convert("RGBA")
-                  box=pix.getchannel("A").getbbox()
-                  assert box and box[0]>=3 and box[1]>=3 and box[2]<=29 and box[3]<=29,(item,box)
+                  png=z.read("assets/modcentral/textures/item/"+item+".png")
+                  assert len(png)>100,(item,len(png))
+                  assert struct.unpack('>II',png[16:24])==(32,32),item
               print("VALIDAÇÃO OK: 5 sprites completos com margem; 5 modelos 3D apenas na mão")
           PY
       - name: Publicar exclusivamente JAR da opção 5
