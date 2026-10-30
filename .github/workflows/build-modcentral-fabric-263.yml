@@ -1,9 +1,8 @@
-name: Compilar ModCentral Fabric 26.3 Java 25
+name: Build ModCentral Fabric 26.3 - Opção 5 Gelo Azul
 on:
   push:
-    branches: [modcentral-fabric-26.3-minerios-espada]
-    paths-ignore:
-      - 'dist/**'
+    branches: [modcentral-fabric-263-gelo-v1-1-0]
+    paths-ignore: ['dist/**']
 permissions:
   contents: write
 jobs:
@@ -19,30 +18,49 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
-      - name: Gerar texturas e recursos
+      - name: Gerar texturas da opção 5 e recursos Minecraft
         run: python3 generate_assets.py
-      - name: Compilar com Fabric Loom oficial
+      - name: Compilar com Fabric Loom
         run: gradle --no-daemon clean build --stacktrace
-      - name: Validar mod JAR e conteudo
+      - name: Verificar JAR 1.1.0, registro de ferramentas e texturas
         run: |
           ls -lh build/libs
-          test -f build/libs/ModCentral-Fabric-26.3-1.0.0.jar
-          unzip -t build/libs/ModCentral-Fabric-26.3-1.0.0.jar
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.0.0.jar | grep -q "br/cubeforge/modcentral/ModCentral.class"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.0.0.jar | grep -q "assets/modcentral/textures/item/espada_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.0.0.jar | grep -q "assets/modcentral/textures/block/minerio_cristal_azul.png"
-          unzip -p build/libs/ModCentral-Fabric-26.3-1.0.0.jar fabric.mod.json | grep -q '"minecraft": "26.3"'
-      - name: Publicar somente o JAR na branch isolada
+          test -f build/libs/ModCentral-Fabric-26.3-1.1.0.jar
+          unzip -t build/libs/ModCentral-Fabric-26.3-1.1.0.jar
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "br/cubeforge/modcentral/ModCentral.class"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/espada_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/machado_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/picareta_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/pa_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/enxada_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/block/minerio_cristal_azul.png"
+          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/block/minerio_cristal_profundo.png"
+          unzip -p build/libs/ModCentral-Fabric-26.3-1.1.0.jar fabric.mod.json | grep -q '"minecraft": "26.3"'
+          unzip -p build/libs/ModCentral-Fabric-26.3-1.1.0.jar fabric.mod.json | grep -q '"version": "1.1.0"'
+          python3 - <<'PY'
+          import zipfile, struct
+          path='build/libs/ModCentral-Fabric-26.3-1.1.0.jar'
+          with zipfile.ZipFile(path) as z:
+              files=z.namelist()
+              textures=[n for n in files if n.startswith("assets/modcentral/textures/") and n.endswith(".png")]
+              assert len(textures)>=8, (len(textures),textures)
+              for n in textures:
+                  b=z.read(n)
+                  assert b[:8]==b'\x89PNG\r\n\x1a\n',n
+                  assert struct.unpack('>II',b[16:24])==(16,16),n
+              print("VALIDAÇÃO OK:",len(textures),"texturas 16x16 presentes")
+          PY
+      - name: Publicar exclusivamente JAR da opção 5
         run: |
           mkdir -p dist
-          cp build/libs/ModCentral-Fabric-26.3-1.0.0.jar dist/ModCentral-Fabric-26.3.jar
+          cp build/libs/ModCentral-Fabric-26.3-1.1.0.jar dist/ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0.jar
           git config user.name 'modcentral-build[bot]'
           git config user.email 'actions@users.noreply.github.com'
-          git add dist/ModCentral-Fabric-26.3.jar
-          git commit -m 'Publicar .jar Fabric 26.3 compilado [skip ci]'
+          git add dist/ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0.jar
+          git commit -m 'Publicar JAR v1.1.0 Opção 5 gelo azul [skip ci]'
           git push
       - uses: actions/upload-artifact@v4
         with:
-          name: ModCentral-Fabric-26.3-JAR
-          path: build/libs/ModCentral-Fabric-26.3-1.0.0.jar
+          name: ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0
+          path: build/libs/ModCentral-Fabric-26.3-1.1.0.jar
           if-no-files-found: error
