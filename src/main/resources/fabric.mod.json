@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "modcentral",
+  "version": "${version}",
+  "name": "ModCentral - Minérios e Espadas",
+  "description": "Aba própria no inventário Criativo, minério de cristal, e espada original Cubeforge.",
+  "authors": ["Cubeforge"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {"main": ["br.cubeforge.modcentral.ModCentral"]},
+  "depends": {
+    "fabricloader": ">=0.20.1",
+    "minecraft": "26.3",
+    "java": ">=25",
+    "fabric-api": ">=0.165.0"
+  }
+}
