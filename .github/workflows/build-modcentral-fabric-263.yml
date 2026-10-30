@@ -1,7 +1,7 @@
-name: Build ModCentral Fabric 26.3 - Opção 5 Gelo Azul
+name: Build ModCentral Fabric 26.3 - Gelo Azul 3D v1.2.0
 on:
   push:
-    branches: [modcentral-fabric-263-gelo-v1-1-0]
+    branches: [modcentral-fabric-263-3d-gelo-v1-2-0]
     paths-ignore: ['dist/**']
 permissions:
   contents: write
@@ -18,49 +18,47 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '9.6.0'
-      - name: Gerar texturas da opção 5 e recursos Minecraft
-        run: python3 generate_assets.py
-      - name: Compilar com Fabric Loom
+      - name: Gerar recursos e texturas originais
+        run: python3 generate_assets.py && python3 generate_assets_3d.py
+      - name: Compilar e remapear JAR usando Fabric Loom
         run: gradle --no-daemon clean build --stacktrace
-      - name: Verificar JAR 1.1.0, registro de ferramentas e texturas
+      - name: Validar integridade do JAR, texturas e geometria dos itens
         run: |
-          ls -lh build/libs
-          test -f build/libs/ModCentral-Fabric-26.3-1.1.0.jar
-          unzip -t build/libs/ModCentral-Fabric-26.3-1.1.0.jar
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "br/cubeforge/modcentral/ModCentral.class"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/espada_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/machado_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/picareta_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/pa_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/item/enxada_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/block/minerio_cristal_azul.png"
-          unzip -l build/libs/ModCentral-Fabric-26.3-1.1.0.jar | grep -q "assets/modcentral/textures/block/minerio_cristal_profundo.png"
-          unzip -p build/libs/ModCentral-Fabric-26.3-1.1.0.jar fabric.mod.json | grep -q '"minecraft": "26.3"'
-          unzip -p build/libs/ModCentral-Fabric-26.3-1.1.0.jar fabric.mod.json | grep -q '"version": "1.1.0"'
+          test -f build/libs/ModCentral-Fabric-26.3-1.2.0.jar
+          unzip -t build/libs/ModCentral-Fabric-26.3-1.2.0.jar
           python3 - <<'PY'
-          import zipfile, struct
-          path='build/libs/ModCentral-Fabric-26.3-1.1.0.jar'
+          import zipfile, json, struct, sys
+          path='build/libs/ModCentral-Fabric-26.3-1.2.0.jar'
+          names=['espada_cristal_azul','machado_cristal_azul','picareta_cristal_azul','pa_cristal_azul','enxada_cristal_azul','cristal_azul']
           with zipfile.ZipFile(path) as z:
-              files=z.namelist()
-              textures=[n for n in files if n.startswith("assets/modcentral/textures/") and n.endswith(".png")]
-              assert len(textures)>=8, (len(textures),textures)
-              for n in textures:
-                  b=z.read(n)
-                  assert b[:8]==b'\x89PNG\r\n\x1a\n',n
-                  assert struct.unpack('>II',b[16:24])==(16,16),n
-              print("VALIDAÇÃO OK:",len(textures),"texturas 16x16 presentes")
+              meta=json.loads(z.read('fabric.mod.json'))
+              assert meta['version']=='1.2.0' and meta['depends']['minecraft']=='26.3'
+              assert meta['depends']['java']=='>=25'
+              assert 'br/cubeforge/modcentral/ModCentral.class' in z.namelist()
+              for name in names:
+                  p=f'assets/modcentral/models/item/{name}.json'
+                  m=json.loads(z.read(p))
+                  assert len(m['elements'])>=40,(p,len(m.get('elements',[])))
+                  assert all('from' in e and 'to' in e and e['from'][2]!=e['to'][2] for e in m['elements'])
+                  assert 'firstperson_righthand' in m['display']
+                  texture=z.read(f'assets/modcentral/textures/item/{name}.png')
+                  assert texture[:8]==b'\x89PNG\r\n\x1a\n'
+                  assert struct.unpack('>II',texture[16:24])==(16,16)
+              for ore in ('minerio_cristal_azul','minerio_cristal_profundo'):
+                  assert f'assets/modcentral/textures/block/{ore}.png' in z.namelist()
+              print('VALIDADO: 6 modelos realmente tridimensionais, 8 PNG, Fabric 26.3, Java 25.')
           PY
-      - name: Publicar exclusivamente JAR da opção 5
+      - name: Publicar somente o JAR final
         run: |
           mkdir -p dist
-          cp build/libs/ModCentral-Fabric-26.3-1.1.0.jar dist/ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0.jar
+          cp build/libs/ModCentral-Fabric-26.3-1.2.0.jar dist/ModCentral-Fabric-26.3-Gelo-3D-v1.2.0.jar
           git config user.name 'modcentral-build[bot]'
           git config user.email 'actions@users.noreply.github.com'
-          git add dist/ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0.jar
-          git commit -m 'Publicar JAR v1.1.0 Opção 5 gelo azul [skip ci]'
+          git add dist/ModCentral-Fabric-26.3-Gelo-3D-v1.2.0.jar
+          git commit -m 'Publicar ModCentral gelo 3D v1.2.0 [skip ci]'
           git push
       - uses: actions/upload-artifact@v4
         with:
-          name: ModCentral-Fabric-26.3-Gelo-Azul-v1.1.0
-          path: build/libs/ModCentral-Fabric-26.3-1.1.0.jar
+          name: ModCentral-Fabric-26.3-Gelo-3D-v1.2.0
+          path: build/libs/ModCentral-Fabric-26.3-1.2.0.jar
           if-no-files-found: error
