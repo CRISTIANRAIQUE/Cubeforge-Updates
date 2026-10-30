@@ -59,7 +59,7 @@ jobs:
                   held=json.loads(z.read("assets/modcentral/models/item/"+item+"_held.json"))
                   assert 20<len(held["elements"])<256,(item,"modelo 3D deve ser leve")
                   assert len(held["elements"][0]["faces"])<=6
-                  assert "#metal" in held["textures"] and "#ice" in held["textures"]
+                  assert "metal" in held["textures"] and "ice" in held["textures"]
                   assert held["display"]["firstperson_righthand"]["scale"][0]<=0.55
                   assert "gui" not in held["display"]
                   definition=json.loads(z.read("assets/modcentral/items/"+item+".json"))["model"]
