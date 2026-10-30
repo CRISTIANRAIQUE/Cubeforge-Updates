@@ -11,10 +11,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.HoeItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -66,23 +62,19 @@ public final class ModCentral implements ModInitializer {
 
     public static final Item MACHADO = Registry.register(BuiltInRegistries.ITEM,
         toolKey("machado_cristal_azul"),
-        new AxeItem(ToolMaterial.DIAMOND, 6.0F, -3.0F,
-            new Item.Properties().setId(toolKey("machado_cristal_azul"))));
+        new Item(new Item.Properties().setId(toolKey("machado_cristal_azul")).axe(ToolMaterial.DIAMOND, 6.0F, -3.0F)));
 
     public static final Item PICARETA = Registry.register(BuiltInRegistries.ITEM,
         toolKey("picareta_cristal_azul"),
-        new PickaxeItem(ToolMaterial.DIAMOND, 1.0F, -2.8F,
-            new Item.Properties().setId(toolKey("picareta_cristal_azul"))));
+        new Item(new Item.Properties().setId(toolKey("picareta_cristal_azul")).pickaxe(ToolMaterial.DIAMOND, 1.0F, -2.8F)));
 
     public static final Item PA = Registry.register(BuiltInRegistries.ITEM,
         toolKey("pa_cristal_azul"),
-        new ShovelItem(ToolMaterial.DIAMOND, 1.5F, -3.0F,
-            new Item.Properties().setId(toolKey("pa_cristal_azul"))));
+        new Item(new Item.Properties().setId(toolKey("pa_cristal_azul")).shovel(ToolMaterial.DIAMOND, 1.5F, -3.0F)));
 
     public static final Item ENXADA = Registry.register(BuiltInRegistries.ITEM,
         toolKey("enxada_cristal_azul"),
-        new HoeItem(ToolMaterial.DIAMOND, -1.0F, 0.0F,
-            new Item.Properties().setId(toolKey("enxada_cristal_azul"))));
+        new Item(new Item.Properties().setId(toolKey("enxada_cristal_azul")).hoe(ToolMaterial.DIAMOND, -1.0F, 0.0F)));
 
     public static final ResourceKey<CreativeModeTab> TAB_KEY =
         ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), id("minerios_espadas"));
