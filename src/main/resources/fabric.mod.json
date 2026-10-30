@@ -3,7 +3,7 @@
   "id": "modcentral",
   "version": "${version}",
   "name": "ModCentral - Minérios e Espadas",
-  "description": "Aba própria no inventário Criativo, cristais de gelo, espada, machado, picareta, pá e enxada.",
+  "description": "Aba própria no inventário Criativo, cristais de gelo, espada, machado, picareta, pá e enxada com modelos 3D volumétricos na mão, gelo azul da Opção 5.",
   "authors": ["Cubeforge"],
   "license": "MIT",
   "environment": "*",
