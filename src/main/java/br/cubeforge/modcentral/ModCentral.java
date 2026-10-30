@@ -59,7 +59,7 @@ public final class ModCentral implements ModInitializer {
     public static final ResourceKey<CreativeModeTab> TAB_KEY =
         ResourceKey.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), id("minerios_espadas"));
 
-    public static final CreativeModeTab TAB = CreativeModeTab.builder()
+    public static final CreativeModeTab TAB = CreativeModeTab.builder(CreativeModeTab.Row.TOP, 7)
         .title(Component.translatable("creativeTab.modcentral.minerios_espadas"))
         .icon(() -> new ItemStack(ESPADA))
         .displayItems((parameters, output) -> {
